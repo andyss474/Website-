@@ -1,0 +1,198 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crucio Group - Empowering Creativity</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/babel-standalone@7.22.9/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    function Navbar() {
+      return (
+        <nav className="bg-gray-900 text-white p-4 fixed w-full top-0 z-10">
+          <div className="container mx-auto flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Crucio Group</h1>
+            <div className="space-x-4">
+              <a href="#home" className="hover:text-gray-300">Home</a>
+              <a href="#about" className="hover:text-gray-300">About</a>
+              <a href="#subsidiaries" className="hover:text-gray-300">Subsidiaries</a>
+              <a href="#contact" className="hover:text-gray-300">Contact</a>
+            </div>
+          </div>
+        </nav>
+      );
+    }
+
+    function Hero() {
+      return (
+        <section id="home" className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white h-screen flex items-center">
+          <div className="container mx-auto text-center">
+            <h2 className="text-5xl font-bold mb-4">Welcome to Crucio Group</h2>
+            <p className="text-xl mb-6">Empowering creativity through printing, fashion, and design.</p>
+            <a href="#subsidiaries" className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold hover:bg-gray-200">Explore Our Brands</a>
+          </div>
+        </section>
+      );
+    }
+
+    function About() {
+      return (
+        <section id="about" className="py-16 bg-gray-100">
+          <div className="container mx-auto text-center">
+            <h2 className="text-4xl font-bold mb-6">About Crucio Group</h2>
+            <p className="text-lg max-w-2xl mx-auto">
+              Crucio Group is a dynamic parent company dedicated to fostering creativity and innovation. 
+              With our subsidiaries—Crucio Printing, Crucio Stuff, and Crucio Design—we deliver top-tier 
+              digital printing, trendy clothing, and exceptional graphic design services.
+            </p>
+          </div>
+        </section>
+      );
+    }
+
+    function SubsidiaryCard({ title, description, link }) {
+      return (
+        <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+          <h3 className="text-2xl font-semibold mb-4">{title}</h3>
+          <p className="text-gray-600 mb-4">{description}</p>
+          <a href={link} className="text-blue-600 font-semibold hover:underline">Learn More</a>
+        </div>
+      );
+    }
+
+    function Subsidiaries() {
+      const subsidiaries = [
+        {
+          title: "Crucio Printing",
+          description: "High-quality digital printing services for all your business and personal needs.",
+          link: "#printing",
+        },
+        {
+          title: "Crucio Stuff",
+          description: "Trendy and sustainable clothing brand that defines modern fashion.",
+          link: "#stuff",
+        },
+        {
+          title: "Crucio Design",
+          description: "Creative graphic design solutions to elevate your brand identity.",
+          link: "#design",
+        },
+      ];
+
+      return (
+        <section id="subsidiaries" className="py-16 bg-white">
+          <div className="container mx-auto">
+            <h2 className="text-4xl font-bold text-center mb-8">Our Subsidiaries</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {subsidiaries.map((sub, index) => (
+                <SubsidiaryCard key={index} title={sub.title} description={sub.description} link={sub.link} />
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Contact() {
+      return (
+        <section id="contact" className="py-16 bg-gray-100">
+          <div className="container mx-auto">
+            <h2 className="text-4xl font-bold text-center mb-8">Get in Touch</h2>
+            <div className="max-w-lg mx-auto">
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Your Name"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+                <input
+                  type="email"
+                  placeholder="Your Email"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+                <textarea
+                  placeholder="Your Message"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  rows="5"
+                ></textarea>
+                <button className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700">
+                  Send Message
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="bg-gray-900 text-white py-8">
+          <div className="container mx-auto text-center">
+            <p>&copy; 2025 Crucio Group. All rights reserved.</p>
+          </div>
+        </footer>
+      );
+    }
+
+    function App() {
+      return (
+        <div>
+          <Navbar />
+          <Hero />
+          <About />
+          <Subsidiaries />
+          <Contact />
+          <Footer />
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
